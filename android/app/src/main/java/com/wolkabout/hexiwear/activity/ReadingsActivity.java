@@ -66,12 +66,15 @@ import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.sharedpreferences.Pref;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Date;
 import java.util.Map;
 
 @EActivity(R.layout.activity_readings)
 @OptionsMenu(R.menu.menu_readings)
 public class ReadingsActivity extends AppCompatActivity implements ServiceConnection {
-
+    String oldTemperature = "";
+    String oldHumidity = "";
+    String oldLight = "";
     private static final String TAG = ReadingsActivity.class.getSimpleName();
 
     @Extra
@@ -208,7 +211,6 @@ public class ReadingsActivity extends AppCompatActivity implements ServiceConnec
     //This is the only method you need to worry about :)
     @Receiver(actions = BluetoothService.DATA_AVAILABLE, local = true)
     void onDataAvailable(Intent intent) {
-        Log.i("its", "alive");
 
         final String uuid = intent.getStringExtra(BluetoothService.READING_TYPE);
         final String data = intent.getStringExtra(BluetoothService.STRING_DATA);
@@ -222,6 +224,10 @@ public class ReadingsActivity extends AppCompatActivity implements ServiceConnec
             Log.w(TAG, "UUID " + uuid + " is unknown. Skipping.");
             return;
         }
+        Date date = new Date();
+
+
+
 
         switch (characteristic) {
             case BATTERY:
@@ -229,10 +235,19 @@ public class ReadingsActivity extends AppCompatActivity implements ServiceConnec
             case TEMPERATURE:
                 editText2.setText(data);
                 firebaseReference.child("currentTemperature").setValue(data.toString());
+                if(!oldTemperature.equals(data.toString())){
+                    firebaseReference.child("historicalTemperature/"+ date.getTime()).setValue(data.toString());
+                    oldTemperature = data.toString();
+                }
+
                 break;
             case HUMIDITY:
                 someReading.setText(data);
                 firebaseReference.child("currentHumidity").setValue(data.toString());
+                if(!oldHumidity.equals(data.toString())){
+                    firebaseReference.child("historicalHumidity/"+ date.getTime()).setValue(data.toString());
+                    oldHumidity = data.toString();
+                }
                 break;
             case PRESSURE:
                 break;
@@ -241,6 +256,10 @@ public class ReadingsActivity extends AppCompatActivity implements ServiceConnec
             case LIGHT:
                 editText.setText(data);
                 firebaseReference.child("currentLight").setValue(data.toString());
+                if(!oldLight.equals(data.toString())){
+                    firebaseReference.child("historicalLight/"+ date.getTime()).setValue(data.toString());
+                    oldLight = data.toString();
+                }
                 break;
             case STEPS:
                 break;
