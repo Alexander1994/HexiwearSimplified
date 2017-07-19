@@ -42,6 +42,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import com.wolkabout.hexiwear.R;
+import com.wolkabout.hexiwear.firebaseObjects.Humidity;
+import com.wolkabout.hexiwear.firebaseObjects.Light;
+import com.wolkabout.hexiwear.firebaseObjects.Temperature;
 import com.wolkabout.hexiwear.model.Characteristic;
 import com.wolkabout.hexiwear.model.HexiwearDevice;
 import com.wolkabout.hexiwear.model.Mode;
@@ -225,6 +228,7 @@ public class ReadingsActivity extends AppCompatActivity implements ServiceConnec
             return;
         }
         Date date = new Date();
+        String value;
 
 
 
@@ -233,20 +237,26 @@ public class ReadingsActivity extends AppCompatActivity implements ServiceConnec
             case BATTERY:
                 break;
             case TEMPERATURE:
+                value = data.toString();
                 editText2.setText(data);
                 firebaseReference.child("currentTemperature").setValue(data.toString());
-                if(!oldTemperature.equals(data.toString())){
-                    firebaseReference.child("historicalTemperature/"+ date.getTime()).setValue(data.toString());
-                    oldTemperature = data.toString();
+                if(!oldTemperature.equals(value)){
+                    double temp = Double.parseDouble(value.replaceAll("[^\\d.]", ""));
+                    Temperature temperature = new Temperature("" + date.getTime(), temp);
+                    firebaseReference.child("historicalTemperature/"+ date.getTime()).setValue(temperature);
+                    oldTemperature = value;
                 }
 
                 break;
             case HUMIDITY:
+                value = data.toString();
                 someReading.setText(data);
-                firebaseReference.child("currentHumidity").setValue(data.toString());
-                if(!oldHumidity.equals(data.toString())){
-                    firebaseReference.child("historicalHumidity/"+ date.getTime()).setValue(data.toString());
-                    oldHumidity = data.toString();
+                firebaseReference.child("currentHumidity").setValue(value);
+                if(!oldHumidity.equals(value)){
+                    double humid = Double.parseDouble(value.replaceAll("[^\\d.]", ""));
+                    Humidity humidity = new Humidity("" + date.getTime(), humid);
+                    firebaseReference.child("historicalHumidity/"+ date.getTime()).setValue(humidity);
+                    oldHumidity = value;
                 }
                 break;
             case PRESSURE:
@@ -254,11 +264,14 @@ public class ReadingsActivity extends AppCompatActivity implements ServiceConnec
             case HEARTRATE:
                 break;
             case LIGHT:
+                value = data.toString();
                 editText.setText(data);
                 firebaseReference.child("currentLight").setValue(data.toString());
-                if(!oldLight.equals(data.toString())){
-                    firebaseReference.child("historicalLight/"+ date.getTime()).setValue(data.toString());
-                    oldLight = data.toString();
+                if(!oldLight.equals(value)){
+                    double lit = Double.parseDouble(value.replaceAll("[^\\d.]", ""));
+                    Light light = new Light("" + date.getTime(), lit);
+                    firebaseReference.child("historicalLight/"+ date.getTime()).setValue(light);
+                    oldLight = value;
                 }
                 break;
             case STEPS:
